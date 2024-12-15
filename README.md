@@ -67,13 +67,10 @@ sudo apt install python3 python3-pip python3-venv nginx
 ```
 
 ## Upload website files.
-Your website files can be uploaded in a number of ways. The most convenient one is cloning a github repository. Run the commands while in the root folder of your project:
-```bash
-cd /home/ubuntu/djangoapp/venv
+Your website files can be uploaded in a number of ways. The most convenient one is cloning a github repository.
 ```
-Then use any of the following methods to upload website files
-```
-#clone the code
+#clone the code. Ensure you are in the root directory.
+cd /home/ubuntu/djangoapp/
 git clone https://repository-link.git
 
 #move the files to the root durectory
@@ -91,13 +88,23 @@ scp djangoapp.zip username@remote-server:/home/ubuntu/djangoapp
 
 ```
 
-## Activate Virtual Environment and Install Gunicorn
+## Create, Activate Virtual Environment and Install Gunicorn
 Run the following:
 ```bash
+#Ensure you are in the work directory
 cd /home/ubuntu/djangoapp
+
+#create virtualenv
+python3 -m venv venv
+
+#Activate virtualenv
 source venv/bin/activate
-pip install gunicorn
+
+#Install dependencies
+pip install --upgrade pip    #Optional. 
 pip install -r requirements.txt
+pip install gunicorn
+
 ```
 
 
@@ -118,11 +125,12 @@ WorkingDirectory=/home/ubuntu/djangoapp
 ExecStart=/home/ubuntu/djangoapp/venv/bin/gunicorn \
     --workers 3 \
     --bind unix:/home/ubuntu/djangoapp/djangoapp.sock \
-    djangoapp.wsgi:application
+    djangoproject.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
 ```
+##Note: Replace djangoproject with the directory name that holds your wsgi.py file.
 
 ## Start and Enable Gunicorn Service
 ```bash
@@ -187,11 +195,7 @@ sudo ln -s /etc/nginx/sites-available/djangoapp /etc/nginx/sites-enabled
 sudo systemctl restart nginx
 ```
 
-## Obtain an SSL Certificate with Let's Encrypt
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d yourdomain.com www.yourdomain.com
-```
+
 
 ## Change Ownership or Permissions
 Update file ownership
@@ -306,4 +310,22 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
+## Obtain an SSL Certificate with Let's Encrypt
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d yourdomain.com www.yourdomain.com
+```
 
+## 403 Error in Django Admin
+1. CSRF Token Issue - ensure to update a list of ALLOWED_HOSTS
+```bash
+ALLOWED_HOSTS = ['your-domain.com', 'your-server-ip', 'localhost']
+```
+2. CSRF Trusted Origins - Add a list of trusted Origins
+```bash
+CSRF_TRUSTED_ORIGINS = ['https://your-domain.com']
+```
+3. Static Files Setup - Ensure to collectstatic
+```bash
+python manage.py collectstatic
+```
